@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reading Activities Hub - 5 Chapters</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+      --error: #dc2626;
+      --error-bg: #fef2f2;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container { max-width: 800px; width: 100%; margin: 0 auto; }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* Dashboard Header */
+    .dashboard-header { text-align: center; margin-bottom: 32px; }
+    .dashboard-header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+    .dashboard-header p { color: var(--text-muted); }
+
+    /* Grid Layout */
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .story-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .story-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.15);
+      border-color: var(--primary);
+    }
+
+    .card-badge {
+      align-self: flex-start;
+      background-color: #dbeafe;
+      color: var(--primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .card-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+    .card-desc { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px; }
+    .card-footer { font-weight: 600; color: var(--primary); font-size: 0.9rem; }
+
+    /* Quiz Container */
+    .quiz-container {
+      background: var(--card-bg);
+      padding: 28px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+
+    .top-nav { margin-bottom: 16px; }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 0;
+    }
+
+    .back-btn:hover { text-decoration: underline; }
+
+    .header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h2 { font-size: 1.1rem; color: var(--text-muted); }
+    .page-indicator { font-weight: 600; color: var(--primary); }
+
+    .story-text {
+      background-color: #f1f5f9;
+      padding: 16px;
+      border-left: 4px solid var(--primary);
+      border-radius: 4px;
+      margin-bottom: 24px;
+      font-weight: 500;
+    }
+
+    .question-box {
+      margin-bottom: 20px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background-color: #fafafa;
+    }
+
+    .question-box p { font-weight: 600; margin-bottom: 10px; }
+
+    .options label {
+      display: block;
+      padding: 8px 12px;
+      margin: 6px 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #fff;
+    }
+
+    .options label:hover { background-color: var(--bg); }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .btn:hover { background-color: var(--primary-hover); }
+    .btn:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+    .btn-secondary { background-color: #64748b; }
+    .btn-secondary:hover { background-color: #475569; }
+
+    /* Results Screen */
+    #results-screen { text-align: center; }
+    .score-text {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 10px 0 20px 0;
+    }
+
+    .result-card {
+      text-align: left;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .result-card.correct { background-color: var(--success-bg); border-color: #bbf7d0; }
+    .result-card.incorrect { background-color: var(--error-bg); border-color: #fecaca; }
+
+    .q-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .badge-correct { color: var(--success); font-weight: bold; }
+    .badge-wrong { color: var(--error); font-weight: bold; }
+
+    .action-buttons { display: flex; gap: 12px; margin-top: 20px; }
+    .action-buttons button { flex: 1; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- DASHBOARD -->
+  <div id="dashboardView" class="view active">
+    <header class="dashboard-header">
+      <h1>Reading & Comprehension Hub</h1>
+      <p>Select a story module below to start reading all 5 chapters.</p>
+    </header>
+
+    <div class="story-grid">
+      <div class="story-card" data-act="act1">
+        <div>
+          <span class="card-badge">Module 1</span>
+          <h2 class="card-title">Story Activity 1: Ang Proyekto ng Magkakaibigan</h2>
+          <p class="card-desc">5 Chapters (Tagalog) • Tampok sina Zeik, Ayit, Ana, Shane, Allain at Lance</p>
+        </div>
+        <div class="card-footer">Start Activity &rarr;</div>
+      </div>
+
+      <div class="story-card" data-act="act2">
+        <div>
+          <span class="card-badge">Module 2</span>
+          <h2 class="card-title">Story Activity 2: The Great Adventure</h2>
+          <p class="card-desc">5 Chapters (English) • Featuring Zeik, Ayit, Ana, Shane, Allain & Lance</p>
+        </div>
+        <div class="card-footer">Start Activity &rarr;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY PAGE -->
+  <div id="activityView" class="view">
+    <div class="quiz-container">
+      <div class="top-nav">
+        <button id="backToHomeBtn" class="back-btn" type="button">&larr; Back to Main Website</button>
+      </div>
+
+      <div class="header">
+        <h2 id="actTitle">Activity</h2>
+        <span class="page-indicator" id="pageIndicator">Chapter 1 of 5</span>
+      </div>
+
+      <div id="pageContainer"></div>
+
+      <!-- Results Screen -->
+      <div id="resultsScreen" style="display:none;">
+        <div id="results-screen">
+          <h2>Activity Complete!</h2>
+          <div class="score-text" id="scoreDisplay">0 / 25</div>
+          <div id="breakdownContainer"></div>
+          <div class="action-buttons">
+            <button id="tryAgainBtn" class="btn" type="button">Try Again</button>
+            <button id="homeFromResultsBtn" class="btn btn-secondary" type="button">Main Website</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls" id="controlBox">
+        <button id="prevBtn" class="btn" type="button" disabled>Previous Chapter</button>
+        <button id="nextBtn" class="btn" type="button">Next Chapter</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const activitiesData = {
+    act1: {
+      title: "Story Activity 1: Ang Proyekto ng Magkakaibigan",
+      chapters: [
+        {
+          chapterNumber: 1,
+          title: "Chapter 1: Ang Lihim na Halamanan",
+          story: "Isang umaga habang naglalakad sina Zeik at Ayit sa likod ng kanilang paaralan, nakakita sila ng isang lumang halamanan na puno ng tuyong dahon at damo. Naisip ni Zeik na maaari itong gawing magandang tambayan at aralan. Kaagad silang nagplano ni Ayit na tawagin ang kanilang mga kaibigan upang linisin ito.",
+          questions: [
+            { id: "c1_q1", text: "1. Sino-sino ang nakakita ng lumang halamanan?", correct: "A", options: { A: "Zeik at Ayit", B: "Ana at Shane", C: "Allain at Lance" } },
+            { id: "c1_q2", text: "2. Saan matatagpuan ang lumang halamanan?", correct: "C", options: { A: "Sa parke", B: "Sa tabi ng ilog", C: "Sa likod ng paaralan" } },
+            { id: "c1_q3", text: "3. Ano ang pumupuno sa halamanan nang makita nila ito?", correct: "B", options: { A: "Mga bulaklak at prutas", B: "Mga tuyong dahon at damo", C: "Mga basurang plastik" } },
+            { id: "c1_q4", text: "4. Ano ang naisip ni Zeik na gawin sa halamanan?", correct: "A", options: { A: "Gawing magandang tambayan at aralan", B: "Gawing sakahan ng palay", C: "Gawing basketbolan" } },
+            { id: "c1_q5", text: "5. Ano ang agad na pinlano nina Zeik at Ayit?", correct: "B", options: { A: "Umuwi na lamang", B: "Tawagin ang mga kaibigan para maglinis", C: "Bumili ng mga halaman" } }
+          ]
+        },
+        {
+          chapterNumber: 2,
+          title: "Chapter 2: Ang Paghahanda ng Grupo",
+          story: "Dumarating sina Ana at Shane dala ang mga libro tungkol sa tamang pag-aalaga ng mga halaman at bulaklak. Samantala, sina Allain at Lance naman ay nagdala ng mga walis, pala, at kalaykay mula sa kanilang bahay. Buo na ang grupo nina Zeik, Ayit, Ana, Shane, Allain, at Lance para simulan ang proyekto.",
+          questions: [
+            { id: "c2_q1", text: "1. Ano ang dinala nina Ana at Shane?", correct: "B", options: { A: "Mga pagkain at inumin", B: "Mga libro tungkol sa pag-aalaga ng halaman", C: "Mga laruan" } },
+            { id: "c2_q2", text: "2. Sino-sino ang nagdala ng mga kagamitan tulad ng walis at pala?", correct: "A", options: { A: "Allain at Lance", B: "Zeik at Ayit", C: "Ana at Shane" } },
+            { id: "c2_q3", text: "3. Saan nanggaling ang mga kagamitang dinala nina Allain at Lance?", correct: "C", options: { A: "Sa silid-aklatan", B: "Sa palengke", C: "Sa kanilang bahay" } },
+            { id: "c2_q4", text: "4. Ilang magkakaibigan ang nagtulungan sa proyekto?", correct: "B", options: { A: "4", B: "6", C: "5" } },
+            { id: "c2_q5", text: "5. Ano ang layunin ng kanilang paghahanda?", correct: "A", options: { A: "Upang simulan ang paglilinis ng halamanan", B: "Upang maglaro ng basketbol", C: "Upang mag-aral sa silid-aklatan" } }
+          ]
+        },
+        {
+          chapterNumber: 3,
+          title: "Chapter 3: Ang Pagtutulungan sa Halamanan",
+          story: "Sipag at tiyaga ang ipinamalas ng magkakaibigan. Si Zeik at Ayit ang nag-alis ng mga matataas na damo. Si Ana at Shane naman ang nagplano kung saan itatatanim ang mga bulaklak gamit ang kanilang nabasang libro. Habang sina Allain at Lance naman ang nagbubuhat ng mga mabibigat na bato at lupa.",
+          questions: [
+            { id: "c3_q1", text: "1. Sino-sino ang nag-alis ng mga matataas na damo?", correct: "A", options: { A: "Zeik at Ayit", B: "Allain at Lance", C: "Ana at Shane" } },
+            { id: "c3_q2", text: "2. Ano ang naging gawain nina Ana at Shane?", correct: "C", options: { A: "Magbuhat ng mga bato", B: "Maglinis ng kalye", C: "Magplano ng pagtatamnan ng bulaklak" } },
+            { id: "c3_q3", text: "3. Sino ang nagbuhat ng mga mabibigat na bato at lupa?", correct: "B", options: { A: "Zeik at Ayit", B: "Allain at Lance", C: "Ana at Shane" } },
+            { id: "c3_q4", text: "4. Anong katangian ang ipinamalas ng magkakaibigan sa trabaho?", correct: "A", options: { A: "Sipag at tiyaga", B: "Katamaran", C: "Mahihiyain" } },
+            { id: "c3_q5", text: "5. Ano ang ginamit nina Ana at Shane bilang gabay sa pagtatanim?", correct: "B", options: { A: "Isang mapa", B: "Ang kanilang nabasang libro", C: "Usa na payo ng guro" } }
+          ]
+        },
+        {
+          chapterNumber: 4,
+          title: "Chapter 4: Ang Sorpresang Pagtuklas",
+          story: "Habang naghuhukay sina Allain at Lance sa gitna ng halamanan, nakakita sila ng isang lumang bangko na gawa sa kahoy at isang sirang pader. Sa tulong ni Zeik at Ayit, naayos at napintahan nila ang bangko, habang pinalamutian naman nina Ana at Shane ang pader ng magagandang guhit ng halaman.",
+          questions: [
+            { id: "c4_q1", text: "1. Ano ang natuklasan habang naghuhukay sa gitna ng halamanan?", correct: "B", options: { A: "Isang baul ng ginto", B: "Isang lumang bangko at sirang pader", C: "Isang lumang libro" } },
+            { id: "c4_q2", text: "2. Sino ang nakakita sa lumang bangko habang naghuhukay?", correct: "A", options: { A: "Allain at Lance", B: "Zeik at Ayit", C: "Ana at Shane" } },
+            { id: "c4_q3", text: "3. Sino-sino ang tumulong mag-ayos at magpinta ng bangko?", correct: "C", options: { A: "Ana at Shane", B: "Allain at Lance", C: "Zeik at Ayit" } },
+            { id: "c4_q4", text: "4. Ano ang ginawa nina Ana at Shane sa sirang pader?", correct: "A", options: { A: "Pinalamutian ng mga guhit ng halaman", B: "Giba ito tuluyan", C: "Kinalimutan ito" } },
+            { id: "c4_q5", text: "5. Gawa sa ano ang natagpuang lumang bangko?", correct: "B", options: { A: "Semento", B: "Kahoy", C: "Chalk" } }
+          ]
+        },
+        {
+          chapterNumber: 5,
+          title: "Chapter 5: Ang Magandang Bunga ng Pagtutulungan",
+          story: "Pagkaraan ng ilang linggo, ang dating lumang halamanan ay naging isang napakagandang 'Kainan at Aralan ng Magkakaibigan'. Tuwang-tuwa ang kanilang guro at mga kapwa mag-aaral. Sina Zeik, Ayit, Ana, Shane, Allain, at Lance ay napatunayan na kapag may pagkakaisa, anumang mahirap na gawain ay nagiging madali at matagumpay.",
+          questions: [
+            { id: "c5_q1", text: "1. Ano ang nangyari sa halamanan pagkaraan ng ilang linggo?", correct: "A", options: { A: "Naging magandang parke at aralan", B: "Naging madumi ulit", C: "Nawala ang mga halaman" } },
+            { id: "c5_q2", text: "2. Sino-sino ang natuwa sa naging resulta ng halamanan?", correct: "C", options: { A: "Ang mga tao lang sa kabilang bayan", B: "Wala man lang natuwa", C: "Ang guro at kapwa mag-aaral" } },
+            { id: "c5_q3", text: "3. Ano ang napatunayan ng anim na magkakaibigan?", correct: "B", options: { A: "Na mas maganda ang magtrabaho nang nag-iisa", B: "Na sa pagkakaisa, ang mahirap na gawain ay nagiging madali", C: "Na mahirap magtanim ng bulaklak" } },
+            { id: "c5_q4", text: "4. Ilang magkakaibigan ang nagdiwang sa matagumpay na proyekto?", correct: "A", options: { A: "Anim (6)", B: "Apat (4)", C: "LIMA (5)" } },
+            { id: "c5_q5", text: "5. Ano ang naramdaman ng buong grupo sa huli?", correct: "C", options: { A: "Lungkot at pagod", B: "Galit sa isa't isa", C: "Kasiyahan at tagumpay" } }
+          ]
+        }
+      ]
+    },
+    act2: {
+      title: "Story Activity 2: The Great Forest Adventure",
+      chapters: [
+        {
+          chapterNumber: 1,
+          title: "Chapter 1: The Mysterious Map",
+          story: "On a sunny Saturday morning, Zeik was walking through the woods near their town. Underneath an old oak tree, he discovered a rolled-up parchment map. Excited, Zeik immediately called his best friend Ayit to come look at the strange map together.",
+          questions: [
+            { id: "act2_c1_q1", text: "1. Who found the map in the woods?", correct: "A", options: { A: "Zeik", B: "Lance", C: "Ana" } },
+            { id: "act2_c1_q2", text: "2. On what day of the week did the story begin?", correct: "B", options: { A: "Friday", B: "Saturday", C: "Sunday" } },
+            { id: "act2_c1_q3", text: "3. Where was the map hidden?", correct: "C", options: { A: "Inside a house", B: "Near a river", C: "Underneath an old oak tree" } },
+            { id: "act2_c1_q4", text: "4. Who did Zeik call right after finding the map?", correct: "A", options: { A: "Ayit", B: "Shane", C: "Allain" } },
+            { id: "act2_c1_q5", text: "5. What material was the map made of?", correct: "B", options: { A: "Plastic", B: "Parchment", C: "Cardboard" } }
+          ]
+        },
+        {
+          chapterNumber: 2,
+          title: "Chapter 2: Gathering the Team",
+          story: "Zeik and Ayit decided to gather their friends at the school park. Ana and Shane brought books to research the symbols on the map, while Allain and Lance brought supplies and flashlights for their journey.",
+          questions: [
+            { id: "act2_c2_q1", text: "1. Where did the group meet to plan?", correct: "A", options: { A: "At the school park", B: "In the library", C: "At the gym" } },
+            { id: "act2_c2_q2", text: "2. Who brought books to research the map symbols?", correct: "C", options: { A: "Zeik and Ayit", B: "Allain and Lance", C: "Ana and Shane" } },
+            { id: "act2_c2_q3", text: "3. What gear did Allain and Lance bring?", correct: "B", options: { A: "Food and water", B: "Supplies and flashlights", C: "Ropes and ladders" } },
+            { id: "act2_c2_q4", text: "4. How many friends are in the group in total?", correct: "A", options: { A: "6 friends", B: "4 friends", C: "5 friends" } },
+            { id: "act2_c2_q5", text: "5. What was Ana and Shane's main role in the team?", correct: "C", options: { A: "Carrying bags", B: "Leading the group", C: "Researching map symbols" } }
+          ]
+        },
+        {
+          chapterNumber: 3,
+          title: "Chapter 3: The Whispering River",
+          story: "The six friends followed the map until they reached the Whispering River. The current was fast, but Lance spotted a bridge made of wooden planks. Carefully, Allain helped everyone cross safely to the other side.",
+          questions: [
+            { id: "act2_c3_q1", text: "1. What river did the friends reach?", correct: "A", options: { A: "The Whispering River", B: "The Crystal River", C: "The Green River" } },
+            { id: "act2_c3_q2", text: "2. Who spotted the wooden bridge first?", correct: "B", options: { A: "Ana", B: "Lance", C: "Zeik" } },
+            { id: "act2_c3_q3", text: "3. What was the bridge made of?", correct: "C", options: { A: "Rope", B: "Stone", C: "Wooden planks" } },
+            { id: "act2_c3_q4", text: "4. Who helped everyone cross the bridge safely?", correct: "A", options: { A: "Allain", B: "Ayit", C: "Shane" } },
+            { id: "act2_c3_q5", text: "5. How was the river current described?", correct: "B", options: { A: "Slow and calm", B: "Fast", C: "Frozen" } }
+          ]
+        },
+        {
+          chapterNumber: 4,
+          title: "Chapter 4: Decoding the Puzzle",
+          story: "Across the river, they found a stone door with carved symbols. Ayit noticed a clue on the map, and Shane quickly decoded the ancient secret sentence. Together, they solved the puzzle and opened the door.",
+          questions: [
+            { id: "act2_c4_q1", text: "1. What structure did they find across the river?", correct: "A", options: { A: "A stone door with carved symbols", B: "A wooden cabin", C: "A deep cave" } },
+            { id: "act2_c4_q2", text: "2. Who noticed the clue written on the map?", correct: "C", options: { A: "Lance", B: "Zeik", C: "Ayit" } },
+            { id: "act2_c4_q3", text: "3. Who decoded the ancient secret sentence?", correct: "B", options: { A: "Ana", B: "Shane", C: "Allain" } },
+            { id: "act2_c4_q4", text: "4. How did they manage to open the stone door?", correct: "A", options: { A: "By solving the puzzle together", B: "By pushing it hard", C: "By using a key" } },
+            { id: "act2_c4_q5", text: "5. What was carved on the stone door?", correct: "C", options: { A: "Numbers", B: "Animal pictures", C: "Symbols" } }
+          ]
+        },
+        {
+          chapterNumber: 5,
+          title: "Chapter 5: The Golden Treasure",
+          story: "Inside the room, they found a glowing chest filled with ancient books and gold medals. Zeik, Ayit, Ana, Shane, Allain, and Lance celebrated their team victory. They realized that their true treasure was their strong friendship.",
+          questions: [
+            { id: "act2_c5_q1", text: "1. What object was inside the secret room?", correct: "B", options: { A: "A wooden box", B: "A glowing chest", C: "A glass jar" } },
+            { id: "act2_c5_q2", text: "2. What was inside the glowing chest?", correct: "A", options: { A: "Ancient books and gold medals", B: "Diamonds and silver", C: "Old clothes" } },
+            { id: "act2_c5_q3", text: "3. What did the friends realize was their true treasure?", correct: "C", options: { A: "The gold medals", B: "The secret map", C: "Their strong friendship" } },
+            { id: "act2_c5_q4", text: "4. How many friends shared the victory in the end?", correct: "A", options: { A: "All 6 friends", B: "Only 2 friends", C: "Only 4 friends" } },
+            { id: "act2_c5_q5", text: "5. How did the friends feel about their adventure?", correct: "B", options: { A: "Tired and sad", B: "Happy and celebratory", C: "Scared and regretful" } }
+          ]
+        }
+      ]
+    }
+  };
+
+  let currentActKey = null;
+  let currentChapterIndex = 0;
+
+  function showDashboard() {
+    document.getElementById('activityView').classList.remove('active');
+    document.getElementById('dashboardView').classList.add('active');
+  }
+
+  function openActivity(key) {
+    if (!activitiesData[key]) return;
+    currentActKey = key;
+    currentChapterIndex = 0;
+
+    document.getElementById('actTitle').innerText = activitiesData[key].title;
+    document.getElementById('dashboardView').classList.remove('active');
+    document.getElementById('activityView').classList.add('active');
+
+    document.getElementById('resultsScreen').style.display = 'none';
+    document.getElementById('controlBox').style.display = 'flex';
+    document.getElementById('pageIndicator').style.display = 'inline';
+
+    renderChapters();
+    updateView();
+  }
+
+  function renderChapters() {
+    const act = activitiesData[currentActKey];
+    const container = document.getElementById('pageContainer');
+    container.innerHTML = '';
+
+    act.chapters.forEach((ch, idx) => {
+      const chapterDiv = document.createElement('div');
+      chapterDiv.id = `chapter-${idx}`;
+      chapterDiv.style.display = 'none';
+
+      let questionsHTML = '';
+      ch.questions.forEach((q) => {
+        let optionsHTML = '';
+        for (let optKey in q.options) {
+          optionsHTML += `
+            <label>
+              <input type="radio" name="${q.id}" value="${optKey}">
+              ${q.options[optKey]}
+            </label>
+          `;
+        }
+
+        questionsHTML += `
+          <div class="question-box">
+            <p>${q.text}</p>
+            <div class="options">${optionsHTML}</div>
+          </div>
+        `;
+      });
+
+      chapterDiv.innerHTML = `
+        <h2>${ch.title}</h2>
+        <div class="story-text">${ch.story}</div>
+        <div class="questions-list">${questionsHTML}</div>
+      `;
+      container.appendChild(chapterDiv);
+    });
+  }
+
+  function updateView() {
+    const totalChapters = activitiesData[currentActKey].chapters.length;
+
+    for (let i = 0; i < totalChapters; i++) {
+      const ch = document.getElementById(`chapter-${i}`);
+      if (ch) ch.style.display = 'none';
+    }
+
+    const activeChapter = document.getElementById(`chapter-${currentChapterIndex}`);
+    if (activeChapter) activeChapter.style.display = 'block';
+
+    document.getElementById('pageIndicator').innerText = `Chapter ${currentChapterIndex + 1} of ${totalChapters}`;
+    document.getElementById('prevBtn').disabled = (currentChapterIndex === 0);
+    document.getElementById('nextBtn').innerText = (currentChapterIndex === totalChapters - 1) ? 'Finish & Submit' : 'Next Chapter';
+  }
+
+  function calculateScore() {
+    const act = activitiesData[currentActKey];
+    let totalQuestions = 0;
+    let score = 0;
+    let breakdownHTML = '';
+
+    act.chapters.forEach((ch) => {
+      breakdownHTML += `<h3 style="margin: 20px 0 10px 0; color: var(--primary); text-align: left;">${ch.title}</h3>`;
+      
+      ch.questions.forEach((q) => {
+        totalQuestions++;
+        const selectedInput = document.querySelector(`input[name="${q.id}"]:checked`);
+        const userChoiceKey = selectedInput ? selectedInput.value : null;
+        const isCorrect = (userChoiceKey === q.correct);
+
+        if (isCorrect) score++;
+
+        const userText = userChoiceKey ? q.options[userChoiceKey] : 'No answer selected';
+        const correctText = q.options[q.correct];
+
+        breakdownHTML += `
+          <div class="result-card ${isCorrect ? 'correct' : 'incorrect'}">
+            <div class="q-title">
+              <span>${q.text}</span>
+              <span class="${isCorrect ? 'badge-correct' : 'badge-wrong'}">
+                ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+              </span>
+            </div>
+            <div style="font-size:0.95rem;">
+              <strong>Your Answer:</strong> ${userText}<br>
+              ${!isCorrect ? `<strong>Correct Answer:</strong> ${correctText}` : ''}
+            </div>
+          </div>
+        `;
+      });
+    });
+
+    const totalChapters = act.chapters.length;
+    for (let i = 0; i < totalChapters; i++) {
+      const ch = document.getElementById(`chapter-${i}`);
+      if (ch) ch.style.display = 'none';
+    }
+
+    document.getElementById('controlBox').style.display = 'none';
+    document.getElementById('pageIndicator').style.display = 'none';
+    document.getElementById('resultsScreen').style.display = 'block';
+    document.getElementById('scoreDisplay').innerText = `You scored ${score} out of ${totalQuestions}`;
+    document.getElementById('breakdownContainer').innerHTML = breakdownHTML;
+  }
+
+  // EVENT DELEGATION LISTENER
+  document.addEventListener('click', function(e) {
+    const card = e.target.closest('.story-card');
+    if (card) {
+      const actKey = card.getAttribute('data-act');
+      openActivity(actKey);
+      return;
+    }
+
+    if (e.target.id === 'backToHomeBtn' || e.target.id === 'homeFromResultsBtn') {
+      showDashboard();
+      return;
+    }
+
+    if (e.target.id === 'tryAgainBtn') {
+      openActivity(currentActKey);
+      return;
+    }
+
+    if (e.target.id === 'nextBtn') {
+      const totalChapters = activitiesData[currentActKey].chapters.length;
+      if (currentChapterIndex < totalChapters - 1) {
+        currentChapterIndex++;
+        updateView();
+      } else {
+        calculateScore();
+      }
+      return;
+    }
+
+    if (e.target.id === 'prevBtn') {
+      if (currentChapterIndex > 0) {
+        currentChapterIndex--;
+        updateView();
+      }
+      return;
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
